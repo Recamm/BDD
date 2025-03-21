@@ -189,3 +189,53 @@ end //
 delimiter ;
 
 select ordenUltimaFecha("S18_1749");
+
+
+
+#12
+delimiter //
+create function prodMaxCompra(prodCode text, fechaInicio date, fechaFinal date) returns int deterministic
+begin
+	declare num int;
+	select max(priceEach * quantityOrdered) into num from orderdetails
+	join orders on orders.orderNumber = orderdetails.orderNumber
+	where orders.orderDate > fechaInicio and orders.orderDate < fechaFinal and productCode = prodCode;
+    	if num is null then
+		set num = 0;
+	end if;
+    return num;
+end //
+delimiter ;
+
+select prodMaxCompra("S10_1678", "2003-05-01", "2003-07-01");
+
+
+
+#13
+delimiter //
+create function empleadoClientes(idEmpleado int) returns int deterministic
+begin
+	declare num int;
+    select count(*) into num from employees
+	join customers on employeeNumber = salesRepEmployeeNumber
+	where employeeNumber = idEmpleado;
+    return num;
+end //
+delimiter ;
+
+select empleadoClientes(1370);
+
+
+
+#14
+delimiter //
+create function empleadoNombre(idEmpleado int) returns text deterministic
+begin
+	declare apellido text;
+    select lastName into apellido from employees
+    where employeeNumber in (select reportsTo from employees where employeeNumber = idEmpleado);
+    return apellido;
+end //
+delimiter ;
+
+select empleadoNombre(1370);
