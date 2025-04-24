@@ -95,10 +95,12 @@ create trigger deleteProductVerify before delete on products
 for each row
 begin
 	declare verify int;
-    select (datediff(current_date(), orderDate)/30.44) into verify from orders;
+    select (datediff(current_date(), orderDate)/30.44) into verify from orders
+    join orderdetails on orderdetails.productCode = oders.productCode
+    join orders on orders.orderNumber = orderdetails.orderNumber;
     
     if(verify > 2) then 
-		select "Error, tiene ordenes asociadas";
+		signal sqlstate '45000' set message_text="Error.paso x";
     end if;
     
 end //
