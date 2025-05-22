@@ -1,6 +1,6 @@
 #1
 delimiter //
-create procedure actualizacionStockProductos ()
+create procedure actualizarStock()
 begin
 	declare hayFilas boolean default 1;
     declare cods int;
@@ -9,49 +9,49 @@ begin
     declare continue handler for not found set hayFilas = 0;
     
     open cursorA;
-	recorrer:loop
-	fetch cursorA into cods;
-            
+		recorrer:loop
+		fetch cursorA into cods;
 			if hayFilas = 0 then
 				leave recorrer;
 			end if;
             
-            update producto set stock = stock + 
-            (select sum(cantidad) from ingresostock_producto 
-            join ingresostock on ingresostock.idIngreso = ingresostock_producto.IngresoStock_idIngreso
-            where week(ingresostock.fecha) = week(current_date()) ) where cods = producto.codProducto;
-            
-	end loop recorrer;
-    close cursorA;
-end//
+            update producto 
+            set stock = stock + (select sum(cantidad) from ingresostock_producto
+            join ingresostock on idIngreso = ingresostock_producto
+            where Producto_codProducto = cods and week(fecha) = week(current_date()))
+            and codProducto = cods;
+        
+        end loop recorrer;
+	close cursorA;
+end //
 delimiter ;
 
 
 #2
 delimiter //
-create procedure reducirPrecioProductos()
+create procedure reductorPrecio()
 begin
+
 	declare hayFilas boolean default 1;
-    declare cod int;
+    declare cods int;
     
-    declare cursorB cursor for select codProducto from producto;
+    declare curorB cursor for select codProducto from producto;
     declare continue handler for not found set hayFilas = 0;
     
     open cursorB;
-    
-    loopeado:loop
-    fetch cursorB into cod;
-		
-        if hayFilas = 0 then
-			leave loopeado;
-		end if;
-        
-        update producto set precio = (select (precio * 0.9) from producto
-        join pedido_producto on pedido_producto.Producto_codProducto = producto.codProducto
-        where codProducto = cod and 
-        (select sum(cantidad) from pedido_producto where Producto_codProducto = cod) > 100);
-        
-    end loop loopeado;
-    close cursorB;
+		recorrer:loop
+        fetch cursorB into cods;
+			if hayFilas = 0 then
+				leave recorrer;
+			end if;
+            
+            update producto set precio = precio * 0.9
+            where 100 > (select ifnull(sum(cantidad), 0) from pedido 
+            join pedido_producto on idPedido = Pedido_idPedido 
+            where Producto_codProducto = cods and week(fecha) = week(current_date()));
+            
+		end loop recorrer;
+	close cursorB;
+
 end //
 delimiter ;
