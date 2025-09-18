@@ -5,8 +5,8 @@ db.hotel.insertMany(
         {
             _id: 0,
             nombre: "Hotel Spa Buenos Aires",
-            calle: "Constituyentes",
-            numero: 5880,
+            direccion: "Constituyentes 5880",
+            numero: 1155550000,
             zona: "CABA",
             comodidades: [
                 {
@@ -66,13 +66,45 @@ db.hotel.insertMany(
                 centroDeInformacionTuristica: 120,
                 taxi: 1500,
                 remises: 4000
-            }
+            },
+            puntosDeInteres:
+            [
+                {
+                    _id: 0,
+                    nombre: "Parque",
+                    ubicacion: {
+                        calle: "Avenida 9 de Julio",
+                        numero: 0,
+                        zona: "CABA"
+                    },
+                    telefono: 123456789,
+                    horarioDeAtencion: {
+                        lunes: "08:00 - 20:00",
+                        martes: "08:00 - 20:00",
+                        miercoles: "08:00 - 20:00",
+                        jueves: "08:00 - 20:00",
+                        viernes: "08:00 - 22:00",
+                        sabado: "10:00 - 22:00",
+                        domingo: ""
+                    },
+                    dias: {
+                        lunes: true,
+                        martes: true,
+                        miercoles: true,
+                        jueves: true,
+                        viernes: true,
+                        sabado: true,
+                        domingo: false
+                    },
+                    web: "www.parque9julio.com.arg",
+                }
+            ]
         },
         {
             _id: 1,
             nombre: "Hotel Alvarellos",
-            calle: "Alvarellos",
-            numero: 2300,
+            calle: "Alvarellos 2300",
+            numero: 1100005555,
             zona: "CABA",
             comodidades: [
                 {
@@ -106,6 +138,7 @@ db.hotel.insertMany(
                     telefono: 410
                 }, 
                 {
+
                     nombre: "pileta",
                     telefono: 420
                 }, 
@@ -132,7 +165,39 @@ db.hotel.insertMany(
                 centroDeInformacionTuristica: 120,
                 taxi: 1500,
                 remises: 4000
-            }
+            },
+            puntosDeInteres:
+            [
+                {
+                    _id: 0,
+                    nombre: "Parque",
+                    ubicacion: {
+                        calle: "Avenida 9 de Julio",
+                        numero: 0,
+                        zona: "CABA"
+                    },
+                    telefono: 123456789,
+                    horarioDeAtencion: {
+                        lunes: "08:00 - 20:00",
+                        martes: "08:00 - 20:00",
+                        miercoles: "08:00 - 20:00",
+                        jueves: "08:00 - 20:00",
+                        viernes: "08:00 - 22:00",
+                        sabado: "10:00 - 22:00",
+                        domingo: ""
+                    },
+                    dias: {
+                        lunes: true,
+                        martes: true,
+                        miercoles: true,
+                        jueves: true,
+                        viernes: true,
+                        sabado: true,
+                        domingo: false
+                    },
+                    web: "www.parque9julio.com.arg",
+                }
+            ]
         }
     ]
 )
@@ -176,7 +241,8 @@ db.chat.insertMany(
             hotelId: 0,
             mensajes: [
                 {
-                    de: "usuario",
+                    de: "usu
+ario",
                     fecha: "01-01-2024:00:00",
                     texto: "Hola, quisiera saber más sobre las comodidades del hotel."
                 },
@@ -241,38 +307,38 @@ db.chat.insertMany(
     ]
 )
 
-db.createCollection("puntosDeInteres")
-db.puntosDeInteres.insertOne(
-    {
-        _id: 0,
-        nombre: "Parque",
-        ubicacion: {
-            calle: "Avenida 9 de Julio",
-            numero: 0,
-            zona: "CABA"
-        },
-        telefono: 123456789,
-        horarioDeAtencion: {
-            lunes: "08:00 - 20:00",
-            martes: "08:00 - 20:00",
-            miercoles: "08:00 - 20:00",
-            jueves: "08:00 - 20:00",
-            viernes: "08:00 - 22:00",
-            sabado: "10:00 - 22:00",
-            domingo: ""
-        },
-        dias: {
-            lunes: true,
-            martes: true,
-            miercoles: true,
-            jueves: true,
-            viernes: true,
-            sabado: true,
-            domingo: false
-        },
-        web: "www.parque9julio.com.arg",
-    }
-)
+// db.createCollection("puntosDeInteres")
+// db.puntosDeInteres.insertOne(
+//     {
+//         _id: 0,
+//         nombre: "Parque",
+//         ubicacion: {
+//             calle: "Avenida 9 de Julio",
+//             numero: 0,
+//             zona: "CABA"
+//         },
+//         telefono: 123456789,
+//         horarioDeAtencion: {
+//             lunes: "08:00 - 20:00",
+//             martes: "08:00 - 20:00",
+//             miercoles: "08:00 - 20:00",
+//             jueves: "08:00 - 20:00",
+//             viernes: "08:00 - 22:00",
+//             sabado: "10:00 - 22:00",
+//             domingo: ""
+//         },
+//         dias: {
+//             lunes: true,
+//             martes: true,
+//             miercoles: true,
+//             jueves: true,
+//             viernes: true,
+//             sabado: true,
+//             domingo: false
+//         },
+//         web: "www.parque9julio.com.arg",
+//     }
+// )
 
 // Consultas
 
@@ -295,7 +361,7 @@ db.hotel.updateMany({}, {$set: {ultima_actualizacion: new Date()}})
 
 // 6. Mostrar el nombre de los hoteles que cuentan con alguna promoción del 10%.
 
-db.hotel.find({promociones: {$elemMatch: {porcentaje: 10}}})
+db.hotel.find({promociones: {$elemMatch: {porcentaje: 10}}}, {nombre: true})
 
 // 7. Mostrar todos los hoteles que tengan descuento para jubilados.
 
@@ -309,35 +375,91 @@ db.hotel.updateMany({"numerosUtiles.policia": {$exists:true}}, {$set: {"numerosU
 // 9. Mostrar el nombre, dirección y teléfono de los hoteles que tengan como punto
 // de interés el museo MALBA.
 
+db.hotel.find({puntosDeInteres: {$elemMatch: {nombre:"Parque"}}} , {nombre:true , direccion:true , numero:true})
+
 // 10.Agregar una promoción que inicie el 2025-09-10 y termine el 2025-10-10.
 // Elegir un hotel al azar.
+
+db.hotel.updateOne({} ,{ $push: {promociones: {id: 6, motivo:"efectivo", porcentaje: 40, fechaInicio: "2025-09-10", fechaFin: "2025-10-10"}}})
 
 // 11.Mostrar el nombre del hotel, sus servicios y comodidades para aquel que posea
 // el máximo descuento.
 
+db.hotel.find({}, {nombre: true}).sort({"promociones.porcentaje": -1}).limit(1)
+
 // 12.Mostrar los hoteles que tengan descuento para jubilados o para estudiantes.
+
+db.hotel.find({promociones: {$elemMatch: {motivo: {$in: ["Juvilados", "Estudiantes"]}}}})
 
 // 13.Mostrar los hoteles que tengan spa, pileta y además alguna promoción vigente
 // mayor al 20%.
 
+db.hotel.find({comodidades: {$elemMatch: {nombre: {$in: ["Spa", "Piscina"]}}}, promociones: {$elemMatch: {porcentaje: {$gt: 20}}}})
+
 // 14.Mostrar todos los hoteles (nombre, dirección y teléfono) que no tengan
 // promociones.
 
+db.hotel.find({promociones: {$exists: false}}, {nombre: true, direccion: true, numero: true})
+
 // 15.Mostrar los mensajes recibidos del hotel con id 2.
+
+db.chat.find({hotelId:2},{})
 
 // 16.Mostrar todos los hoteles (nombre, dirección y teléfono) que tienen, al menos,
 // tres promociones.
 
+db.hotel.find({$expr: {$gt: [{ $size: "$promociones" }, 3]}}, {nombre: 1,direccion: 1,numero: 1})
+
 // 17.Explicar para qué sirve el operador de $elemMatch y dar un ejemplo.
+
+// $elemMatch se usa para coincidir o matchear datos de arrays
+// Por ejemplo: 
+// {comodidades: {$elemMatch: {nombre: "Spa"}}}
+// Buscamos todos los elementos que tengan de nombre spa en el array/diccionario de comodidades
 
 // 18.Mostrar todos los hoteles que tengan dentro de “números útiles” el teléfono de
 // emergencias médicas.
+// Imaginando que el nro de emergencias es el 911
+
+db.hotel.find({numerosUtiles: {$elemMatch: {}}})
 
 // 19.Mostrar los hoteles con sus promociones vigentes al día de hoy.
+
+db.hotel.find({promociones: {fechaInicio: {$lt: new Date()}, fechaFin: {$gt: new Date()}} }, {nombre: true, promociones: true})
 
 // 20.Borrar todos los documentos de la collection que no ofrezcan comodidades.
 // Tener en cuenta tanto los casos en los que existe como en los que no existe el
 // campo.
 
+db.hotel.deleteMany({$or: [{comodidades: {$exists: false}}, {comodidades: {$size: 0}}]});
+
 // 21.Utilizando el método updateMany() dar un ejemplo de cada uno de los
 // siguientes operadores: $inc, $max, $mul, $rename, $unset, $pop, $pull y $push.
+
+db.hotel.updateMany({}, {$inc: {"promociones.0.porcentaje": 5}})
+// Aumenta el porcentaje de descuento 5% en la primear promocion
+
+db.usuario.updateMany({}, {$max: {telefono: 9999999999}})
+// Si el numero es menor que 9999999999 se reemplaza
+
+db.hotel.updateMany({}, {$mul: {"promociones.0.porcentaje": 2}})
+// Duplica el valor del porcentaje de descuento
+
+db.usuario.updateMany({}, {$rename: {"telefono": "celular"}})
+// Cambia el atributo telefono a celular
+
+db.usuario.updateMany({}, {$unset: {email: ""}})
+// Elimina el atributo email de todos los usuarios
+
+db.hotel.updateMany({}, {$pop: {comodidades: 1}})
+// Elimina el ultimo elemento del array comodidades
+
+db.hotel.updateMany({}, {$push: {"comodidades": {nombre: "Estacionamiento", descripcion: "Estacionamiento con seguridad 24hs"}}})
+// Agrega una nueva comodidad
+
+
+// 22.Indicar el comando utilizado para exportar los datos de una collection y generar
+// un documento json. Lo mismo para importar los datos desde un documento json
+// y generar una collection dentro de la base de datos
+
+mongoexport --host="localhost" --port=27017 --collection=hotel --db=TPMongo --out=hoteles.json
