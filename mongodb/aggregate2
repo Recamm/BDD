@@ -1,0 +1,290 @@
+Crear una base de datos que represente el mismo modelo que la clase anterior, pero teniendo
+una colección para las compras y otra para los clientes. Insertar al menos tres documentos en
+cada colección.
+
+
+db.cliente.insertMany([
+    {
+        dni: 11222333,
+        nombre: "Camilo",
+        apellido: "Asdasd",
+        edad: 17,
+    },
+    {
+        dni: 22334455,
+        nombre: "Lucía",
+        apellido: "González",
+        edad: 18,
+    },
+    {
+        dni: 33445566,
+        nombre: "Sofía",
+        apellido: "Martínez",
+        edad: 24,
+    }
+])
+
+db.compras.insertMany([
+    {
+        _id: 1,
+        dniCliente: 11222333,
+        fecha: new Date("2025-10-01"),
+        productos: [
+            {
+                _id: 1,
+                descripcion: "Manzana",
+                precio: 520,
+                cantidadComprada: 2
+            }
+        ]
+    },
+    {
+        _id: 2,
+        dniCliente: 11222333,
+        fecha: new Date("2025-10-05"),
+        productos: [
+            {
+                _id: 2,
+                descripcion: "Banana",
+                precio: 300,
+                cantidadComprada: 5
+            }
+        ]
+    },
+    {
+        _id: 3,
+        dniCliente: 22334455,
+        fecha: new Date("2025-09-28"),
+        productos: [
+            {
+                _id: 3,
+                descripcion: "Peras",
+                precio: 450,
+                cantidadComprada: 3
+            }
+        ]
+    },
+    {
+        _id: 4,
+        dniCliente: 22334455,
+        fecha: new Date("2025-10-03"),
+        productos: [
+            {
+                _id: 4,
+                descripcion: "Uvas",
+                precio: 700,
+                cantidadComprada: 1
+            }
+        ]
+    },
+    {
+        _id: 5,
+        dniCliente: 33445566,
+        fecha: new Date("2025-10-02"),
+        productos: [
+            {
+                _id: 5,
+                descripcion: "Naranjas",
+                precio: 400,
+                cantidadComprada: 4
+            }
+        ]
+    },
+    {
+        _id: 6,
+        dniCliente: 33445566,
+        fecha: new Date("2025-10-07"),
+        productos: [
+            {
+                _id: 6,
+                descripcion: "Kiwi",
+                precio: 600,
+                cantidadComprada: 2
+            }
+        ]
+    }
+])
+
+// 1) Listar las compras por cliente, mostrando solo el código del cliente y los datos de la compra.
+db.cliente.aggregate([
+    {
+        $lookup: {
+            from: "compras",
+            localField: "dni",
+            foreignField: "dniCliente",
+            as: "comprasClientes"
+        }
+    },
+    {
+        $project: {
+            _id: 1,
+            comprasClientes: 1
+        }
+    }
+])
+
+// 2) Listar el total gastado por cliente, mostrando nombre, apellido y total.
+db.cliente.aggregate([
+    {
+        $lookup: {
+            from: "compras",
+            localField: "dni",
+            foreignField: "dniCliente",
+            as: "comprasCliente"
+        }
+    },
+    {
+        $unwind: "$comprasCliente"
+    },
+    {
+        $unwind: "$comprasCliente.productos"
+    },
+    {
+        $group: {
+            _id: "$_id",
+            totalGastado: {
+                $sum: {$multiply: ["$comprasCliente.productos.precio", "$comprasCliente.productos.cantidadComprada"]}
+            }
+        }
+    },
+    {
+        $project: {
+            _id: 1,
+            nombre: 1,
+            apellido: 1,
+            totalGastado: 1
+        }
+    }
+])
+
+// 3) Listar el monto gastado más caro, más barato y el promedio por cliente.
+db.cliente.aggregate([
+    {
+        $lookup: {
+            from: "compras",
+            localField: "dni",
+            foreignField: "dniCliente",
+            as: "comprasCliente"
+        }
+    },
+    {
+        $unwind: "$comprasCliente"
+    },
+    {
+        $unwind: "$comprasCliente.productos"
+    },
+    {
+        $group: {
+            _id: "$comprasCliente",
+            montoTotal: {
+                $sum: {
+                    $multiply: [
+                        "$comprasCliente.productos.precio", "$comprasCliente.productos.cantidadComprada"
+                    ]
+                }
+            }
+        }
+    },
+    {
+        $group: {
+            _id: "$_id",
+            montoCaro: {
+                $max: "$montoTotal"
+            },
+            montoBarato: {
+                $min: "$montoTotal"
+            },
+            montoPromedio: {
+                $avg: "$montoTotal"
+            }
+        }
+    },
+    {
+        $project: {
+            dni: 1,
+            montoCaro: 1,
+            montoBarato: 1,
+            montoPromedio: 1
+        }
+    }
+])
+
+// 4) Listar la compra con más productos, mostrando el id de compra, la cantidad de productos y el nombre del cliente.
+db.cliente.aggregate([
+    {
+        $lookup: {
+            from: "compras",
+            localField: "dni",
+            foreignField: "dniCliente",
+            as: "comprasCliente"
+        }
+    },
+    {
+        $unwind: "$comprasCliente"
+    },
+    {
+        $unwind: "$comprasCliente.productos"
+    },
+    {
+        $group: {
+            _id: "$comprasCliente._id",
+            nombre: {$first: "$nombre"},
+            cantProductos: {
+                $sum: "$comprasCliente.productos.cantidadComprada"
+            }
+        }
+    },
+    {
+        $project: {
+            _id: 1,
+            nombre: 1,
+            cantProductos: 1,
+        }
+    },
+    {
+        $sort: {
+            cantProductos: -1
+        }
+    },
+    {
+        $limit: 1
+    }
+])
+
+// 5) Listar código de cliente, nombre y apellido de los clientes que hicieron más de dos compras.
+db.cliente.aggregate([
+    {
+        $lookup: {
+            from: "compras",
+            localField: "dni",
+            foreignField: "dniCliente",
+            as: "comprasCliente"
+        }
+    },
+    {
+        $unwind: "$comprasCliente"
+    },
+    {
+        $group: {
+            _id: "$_id",
+            nombre: {$first: "$nombre"},
+            apellido: {$first: "$apellido"},
+            cantCompras: {
+                $sum: 1
+            }
+        }
+    },
+    {
+        $match: {
+            cantCompras: {$gt: 2}
+        }
+    }
+])
+
+// 6) Listar las unidades de productos vendidos por mes.
+
+
+// 7) Listar la cantidad de compras por cliente, por mes.
+
+
+// 8) Listar el año con más ganancia.
