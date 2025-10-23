@@ -1,0 +1,259 @@
+Crear una base de datos para representar el clásico modelo de compras, productos y clientes
+utilizando una única colección. De cada cliente se interesa guardar dni, nombre, apellido. De las
+compras interesa almacenar la fecha y el id, y de los productos el id, la descripción, el precio y la
+cantidad comprada. Insertar al menos tres clientes distintos con, al menos, dos compras cada
+uno.
+
+
+db.cliente.insertMany([
+    {
+        dni: 11222333,
+        nombre: "Camilo",
+        apellido: "Asdasd",
+        edad: 17,
+        compras: [
+            {
+                _id: 1,
+                fecha: new Date("2025-10-01"),
+                productos: [
+                    {
+                        _id: 1,
+                        descripcion: "Manzana",
+                        precio: 520,
+                        cantidadComprada: 2
+                    }
+                ]
+            },
+            {
+                _id: 2,
+                fecha: new Date("2025-10-05"),
+                productos: [
+                    {
+                        _id: 2,
+                        descripcion: "Banana",
+                        precio: 300,
+                        cantidadComprada: 5
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        dni: 22334455,
+        nombre: "Lucía",
+        apellido: "González",
+        edad: 18,
+        compras: [
+            {
+                _id: 3,
+                fecha: new Date("2025-09-28"),
+                productos: [
+                    {
+                        _id: 3,
+                        descripcion: "Peras",
+                        precio: 450,
+                        cantidadComprada: 3
+                    }
+                ]
+            },
+            {
+                _id: 4,
+                fecha: new Date("2025-10-03"),
+                productos: [
+                    {
+                        _id: 4,
+                        descripcion: "Uvas",
+                        precio: 700,
+                        cantidadComprada: 1
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        dni: 33445566,
+        nombre: "Sofía",
+        apellido: "Martínez",
+        edad: 24,
+        compras: [
+            {
+                _id: 5,
+                fecha: new Date("2025-10-02"),
+                productos: [
+                    {
+                        _id: 5,
+                        descripcion: "Naranjas",
+                        precio: 400,
+                        cantidadComprada: 4
+                    }
+                ]
+            },
+            {
+                _id: 6,
+                fecha: new Date("2025-10-07"),
+                productos: [
+                    {
+                        _id: 6,
+                        descripcion: "Kiwi",
+                        precio: 600,
+                        cantidadComprada: 2
+                    }
+                ]
+            }
+        ]
+    }
+]);
+
+
+-- 1) Mostrar el promedio de edad de todos los clientes.
+db.cliente.aggregate([
+    {
+        $group: {
+            _id: null,
+            edadPromedio: {$avg: "$edad"}
+        }
+    }
+])
+
+-- 2) Mostrar el total de unidades que se ordenaron de cada producto en todas las compras.
+db.cliente.aggregate([
+    {
+        $unwind: "$compras"
+    },
+    {
+        $unwind: "$compras.productos"
+    },
+    {
+        $group: {
+            _id: "$compras.productos._id",
+            producto: {$first: "$compras.productos.descripcion"},
+            unidadesQueSeOrdenaron: {$sum: "$compras.productos.cantidadComprada"}
+        }
+    }
+])
+
+-- 3) Mostrar el total gastado por cada cliente.
+db.cliente.aggregate([
+    {
+        $unwind: "$compras"
+    },
+    {
+        $unwind: "$compras.productos"
+    },
+    {
+        $group: {
+            _id: "$_id",
+            gastoTotal: {$sum: {$multiply: ["$compras.productos.precio", "$compras.productos.cantidadComprada"]}}
+        }
+    }
+])
+
+-- 4) Mostrar los clientes que hicieron más de dos compras.
+db.cliente.aggregate([
+    {
+        $project: {
+            _id: "$_id",
+            cantCompras: {$size: "$compras"}
+        }
+    },
+    {
+        $match: {
+            cantCompras: {$gt: 2}
+        }
+    }
+])
+
+-- 5) Mostrar el cliente que realizó más compras.
+db.cliente.aggregate([
+    {
+        $project: {
+            _id: "$_id",
+            comprasTotales: {
+                $size: "$compras"
+            }
+        }
+    },
+    {
+        $limit: 1
+    },
+    { 
+        $sort: {comprasTotales: -1}
+    }
+])
+
+-- 6) Mostrar el promedio de unidades ordenadas por compra para todas las compras.
+db.cliente.aggregate([
+    {
+        $unwind: "$compras"
+    },
+    {
+        $unwind: "$compras.productos"
+    },
+    {
+        $group: {
+            _id: "$compras._id",
+            prodsCant: {
+                $sum: "$compras.productos.cantidadComprada"
+            }
+        }
+    },
+    {
+        $group: {
+            _id: null,
+            promedioUnidades: {
+                $avg: "$prodsCant"
+            }
+        }
+    }
+])
+
+-- 7) Mostrar la cantidad de compras en la que se encuentra cada producto.
+db.cliente.aggregate([
+    {
+        $unwind: "$compras"
+    },
+    {
+        $unwind: "$compras.productos"
+    },
+    {
+        $group: {
+            _id: "$compras.productos._id",
+            nombre: {$first: "$compras.productos.descripcion"},
+            cantDeCompras: {
+                $sum: 1
+            }
+        }
+    }
+])
+
+-- 8) Mostrar el total vendido el día de hoy.
+db.cliente.aggregate([
+    {
+        $unwind: "$compras"
+    },
+    {
+        $match: {
+            "compras.fecha": {
+                $gt: new Date().setHours(0, 0, 0, 0),
+                $lt: new Date().setHours(23, 59, 59, 999)
+            }
+        }
+    } 
+])
+
+-- 9) Mostrar la menor y mayor cantidad ordenada por compra.
+db.cliente.aggregate([
+    {
+        $unwind: "$compras"
+    },
+    {
+        $unwind: "$compras.productos"
+    },
+    {
+        $group: {
+            _id: "$compras._id",
+            maxCant: {$max: "$compras.productos.cantidadComprada"},
+            minCant: {$min: "$compras.productos.cantidadComprada"}
+        }
+    }
+])
